@@ -173,15 +173,13 @@ class Transformer(L.LightningModule):
         src, tgt = batch
         tgt_input = tgt[:, :-1]
         tgt_output = tgt[:, 1:]
-
         src_mask = None
         tgt_mask = None
-
         outputs = self(src, tgt_input, src_mask, tgt_mask)
-        loss = F.cross_entropy(outputs.view(-1, outputs.size(-1)), tgt_output.view(-1))
+        loss = F.cross_entropy(outputs.reshape(-1, outputs.size(-1)), tgt_output.reshape(-1))
+        self.log("train/loss", loss, on_step=False, on_epoch=True, prog_bar=True)
+        return loss 
 
-        self.log("train/loss", loss)
-        return loss
 
     def validation_step(self, batch, batch_idx):
         src, tgt = batch
@@ -192,9 +190,9 @@ class Transformer(L.LightningModule):
         tgt_mask = None
 
         outputs = self(src, tgt_input, src_mask, tgt_mask)
-        loss = F.cross_entropy(outputs.view(-1, outputs.size(-1)), tgt_output.view(-1))
+        loss = F.cross_entropy(outputs.reshape(-1, outputs.size(-1)), tgt_output.reshape(-1))
 
-        self.log("val/loss", loss)
+        self.log("val/loss", loss, on_step=False, on_epoch=True, prog_bar=True)
         return loss
 
     def test_step(self, batch, batch_idx):
@@ -206,7 +204,7 @@ class Transformer(L.LightningModule):
         tgt_mask = None
 
         outputs = self(src, tgt_input, src_mask, tgt_mask)
-        loss = F.cross_entropy(outputs.view(-1, outputs.size(-1)), tgt_output.view(-1))
+        loss = F.cross_entropy(outputs.reshape(-1, outputs.size(-1)), tgt_output.reshape(-1))
 
         self.log("test/loss", loss)
         return loss
